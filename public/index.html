@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Weather App</title>
+</head>
+<body>
+  <h1>Weather App</h1>
+
+  <form id="weather-form">
+    <label for="city">Enter City:</label>
+    <input type="text" id="city" required>
+    <button type="submit">Get Weather</button>
+  </form>
+
+  <div id="weather-info"></div>
+
+  <script>
+    const form = document.getElementById("weather-form");
+    const weatherDiv = document.getElementById("weather-info");
+
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault(); //stop page reload
+
+      const city = document.getElementById("city").value;
+
+      weatherDiv.innerHTML = "Loading...";
+
+      try {
+        const response = await fetch(`/api/weather?city=${city}`);
+        const data = await response.json();
+
+        if (data.error) {
+          weatherDiv.innerHTML = `<p style="color:red">${data.error}</p>`;
+          return;
+        }
+        const sunrise = new Date(data.sunrise * 1000).toLocaleTimeString();
+        const sunset = new Date(data.sunset * 1000).toLocaleTimeString();
+
+        weatherDiv.innerHTML = `
+          <h2>${data.city}</h2>
+          <p>Temperature: ${data.weather.temperature}°F</p>
+          <p>Min: ${data.weather.temp_min}°F</p>
+          <p>Max: ${data.weather.temp_max}°F</p>
+          <p>Humidity: ${data.weather.humidity}%</p>
+          <p>Condition: ${data.weather.condition}</p>
+          <p>Sunrise: ${sunrise}</p>
+          <p>Sunset: ${sunset}</p>
+        `;
+      } catch (error) {
+        weatherDiv.innerHTML = `<p style="color:red">Something went wrong</p>`;
+      }
+    });
+  </script>
+</body>
+</html>
+
