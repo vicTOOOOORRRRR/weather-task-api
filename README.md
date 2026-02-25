@@ -1,7 +1,7 @@
 Weather application
 
 Features:
-- Search weather by city
+- Search weather by city (US ONLY)
 - Displays temperature, min/max, humidity, condition
 - Shows sunrise and sunset times
 - Integrates with OpenWeatherMap API
