@@ -3,55 +3,111 @@
 <head>
   <meta charset="UTF-8">
   <title>Weather App</title>
+  <style>
+    #suggestions {
+      border: 1px solid #ccc;
+      max-width: 300px;
+    }
+    .suggestion-item {
+      padding: 5px;
+      cursor: pointer;
+    }
+    .suggestion-item:hover {
+      background-color: #f0f0f0;
+    }
+  </style>
 </head>
 <body>
   <h1>Weather App</h1>
+  
+  <label for="city">Enter City:</label>
+  <input type="text" id="city" required autocomplete="off">
 
-  <form id="weather-form">
-    <label for="city">Enter City:</label>
-    <input type="text" id="city" required>
-    <button type="submit">Get Weather</button>
-  </form>
-
+  <div id="suggestions"></div>
   <div id="weather-info"></div>
 
   <script>
-    const form = document.getElementById("weather-form");
-    const weatherDiv = document.getElementById("weather-info");
+  const weatherDiv = document.getElementById("weather-info");
+  const cityInput = document.getElementById("city");
+  const suggestionsDiv = document.getElementById("suggestions");
 
-    form.addEventListener("submit", async (event) => {
-      event.preventDefault(); //stop page reload
+  
+  cityInput.addEventListener("input", async () => { //sugest city as user types
+    const query = cityInput.value;
 
-      const city = document.getElementById("city").value;
+    if (query.length < 2) {
+      suggestionsDiv.innerHTML = "";
+      return;
+    }
 
-      weatherDiv.innerHTML = "Loading...";
+    const response = await fetch(`/api/cities?city=${query}`);
+    const cities = await response.json();
 
-      try {
-        const response = await fetch(`/api/weather?city=${city}`);
-        const data = await response.json();
+    suggestionsDiv.innerHTML = "";
 
-        if (data.error) {
-          weatherDiv.innerHTML = `<p style="color:red">${data.error}</p>`;
-          return;
-        }
-        const sunrise = new Date(data.sunrise * 1000).toLocaleTimeString();
-        const sunset = new Date(data.sunset * 1000).toLocaleTimeString();
+    cities.forEach(city => {
+      const div = document.createElement("div");
+      div.classList.add("suggestion-item");
+      div.textContent =
+        `${city.name}${city.state ? ", " + city.state : ""}, ${city.country}`;
 
-        weatherDiv.innerHTML = `
-          <h2>${data.city}</h2>
-          <p>Temperature: ${data.weather.temperature}°F</p>
-          <p>Min: ${data.weather.temp_min}°F</p>
-          <p>Max: ${data.weather.temp_max}°F</p>
-          <p>Humidity: ${data.weather.humidity}%</p>
-          <p>Condition: ${data.weather.condition}</p>
-          <p>Sunrise: ${sunrise}</p>
-          <p>Sunset: ${sunset}</p>
-        `;
-      } catch (error) {
-        weatherDiv.innerHTML = `<p style="color:red">Something went wrong</p>`;
-      }
+      div.addEventListener("click", async () => {
+        cityInput.value =
+          `${city.name}${city.state ? ", " + city.state : ""}, ${city.country}`;
+
+        suggestionsDiv.innerHTML = "";
+
+        await getWeatherByCoords(
+          city.lat,
+          city.lon,
+          city.name,
+          city.state,
+          city.country
+        );
+      });
+
+      suggestionsDiv.appendChild(div);
     });
-  </script>
+  });
+
+  async function getWeatherByCoords(lat, lon, name, state, country) {
+    weatherDiv.innerHTML = "Loading...";
+
+    try {
+      const response = await fetch(`/api/weather?lat=${lat}&lon=${lon}`);
+      const data = await response.json();
+
+      displayWeather(data, name, state, country);
+    } catch (error) {
+      weatherDiv.innerHTML =
+        `<p style="color:red">Something went wrong</p>`;
+    }
+  }
+
+  function displayWeather(data, name, state, country) {
+    if (data.error) {
+      weatherDiv.innerHTML = `<p style="color:red">${data.error}</p>`;
+      return;
+    }
+
+    const sunrise = new Date(data.sunrise * 1000).toLocaleTimeString();
+    const sunset = new Date(data.sunset * 1000).toLocaleTimeString();
+
+    let location = name;
+    if (state) location += ", " + state;
+    if (country) location += ", " + country;
+
+    weatherDiv.innerHTML = `
+      <h2>${location}</h2>
+      <p>Temperature: ${data.weather.temperature}°F</p>
+      <p>Min: ${data.weather.temp_min}°F</p>
+      <p>Max: ${data.weather.temp_max}°F</p>
+      <p>Humidity: ${data.weather.humidity}%</p>
+      <p>Condition: ${data.weather.condition}</p>
+      <p>Sunrise: ${sunrise}</p>
+      <p>Sunset: ${sunset}</p>
+    `;
+  }
+</script>
 </body>
 </html>
-
