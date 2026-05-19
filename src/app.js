@@ -2,7 +2,10 @@ require("dotenv").config(); //loads the .env
 
 //import and setup express
 const express = require("express");
+const cors = require("cors");
 const app = express();
+
+app.use(cors());
 const path = require("path");
 
 //define port
@@ -21,7 +24,7 @@ app.get("/api/cities", async (req, res) => { //get city list
 
   try {
     const response = await fetch(
-      `http://api.openweathermap.org/geo/1.0/direct?q=${city}&limit=5&appid=${process.env.OPENWEATHER_API_KEY}`
+      `https://api.openweathermap.org/geo/1.0/direct?q=${city}&limit=5&appid=${process.env.OPENWEATHER_API_KEY}`
     );
 
     const data = await response.json();
@@ -74,7 +77,7 @@ app.get("/api/weather", async (req, res) => {//get weather
   }
 });
 
-app.listen(PORT, (error) => { // runs server
+app.listen(PORT, "0.0.0.0", (error) => { // runs server
     if (!error) 
         console.log(`Server running on port ${PORT}`);
     else 
