@@ -11,6 +11,18 @@ const path = require("path");
 //define port
 const PORT = process.env.PORT || 3000;
 
+
+//limits the users so they wont exceed limit
+const rateLimit = require("express-rate-limit");
+
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // limit each IP to 100 requests
+  message: { error: "Too many requests, try again later." }
+});
+
+app.use(limiter);
+
 app.use(express.json()); //allow server to parse json requests
 app.use(express.static(path.join(__dirname, "../public")));
 
