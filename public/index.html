@@ -90,9 +90,17 @@
       return;
     }
 
-    const sunrise = new Date(data.sunrise * 1000).toLocaleTimeString();
-    const sunset = new Date(data.sunset * 1000).toLocaleTimeString();
+    const sunrise = new Date(data.sunrise * 1000).toLocaleTimeString("en-US", {
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: true
+    });
 
+    const sunset = new Date(data.sunset * 1000).toLocaleTimeString("en-US", {
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: true
+    });
     let location = name;
     if (state) location += ", " + state;
     if (country) location += ", " + country;
@@ -104,6 +112,7 @@
       <p>Max: ${data.weather.temp_max}°F</p>
       <p>Humidity: ${data.weather.humidity}%</p>
       <p>Condition: ${data.weather.condition}</p>
+      <p>Current Local Time: ${data.localTime}</p>
       <p>Sunrise: ${sunrise}</p>
       <p>Sunset: ${sunset}</p>
     `;

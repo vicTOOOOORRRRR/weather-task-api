@@ -65,6 +65,8 @@ app.get("/api/weather", async (req, res) => {//get weather
     //gets the weather data 
     const response = await fetch(url);
     const data = await response.json();
+    const utcNow = Date.now() + new Date().getTimezoneOffset() * 60000;
+    const localTime = new Date(utcNow + data.timezone * 1000);
 
     if (data.cod !== 200) {
       return res.json({ error: "City not found" });
@@ -73,6 +75,14 @@ app.get("/api/weather", async (req, res) => {//get weather
     res.json({
       city: data.name,
       country: data.sys.country,
+      localTime: localTime.toLocaleDateString("en-US", {
+        month: "long",
+        day: "numeric"
+      }) + ", " + localTime.toLocaleTimeString("en-US", {
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: true
+      }),
       sunrise: data.sys.sunrise,
       sunset: data.sys.sunset,
       weather: {
